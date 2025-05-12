@@ -1,0 +1,237 @@
+// frontend/form.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Payment Entry Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .form-container {
+      max-width: 1100px;
+      margin: 50px auto;
+      padding: 50px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    h2 {
+      text-align: center;
+      color: #ff6b00;
+      margin-bottom: 40px;
+    }
+    .form-section {
+      margin-bottom: 40px;
+    }
+    .form-section h3 {
+      font-size: 1.2rem;
+      color: #222;
+      border-left: 4px solid #ff6b00;
+      padding-left: 10px;
+      margin-bottom: 20px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 5px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
+    .submit-btn {
+      margin-top: 40px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: #ff6b00;
+      color: white;
+      border: none;
+      padding: 16px 36px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .conditional-fields.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>🧾 Student Payment Entry – Internal Use (By Counselor Only)</h2>
+     <form id="paymentForm">
+      <div class="form-section">
+        <h3>Personal Details</h3>
+        <div class="form-grid">
+          <div><label>Date</label><input type="date" id="date" required /></div>
+          <div><label>Student Name</label><input type="text" id="name" required /></div>
+          <div><label>Contact Number</label><input type="tel" id="contact" required /></div>
+          <div><label>Email ID</label><input type="email" id="email" required /></div>
+          <div><label>City / State</label><input type="text" id="city" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Lead & Counselor Info</h3>
+        <div class="form-grid">
+          <div><label>Lead Source</label>
+            <select id="lead">
+              <option>Youtube</option><option>Instagram</option><option>Facebook</option>
+              <option>Referral</option><option>Webinar</option><option>Walk-in</option>
+              <option>Family/Friends</option><option>Other</option>
+            </select>
+          </div>
+          <div><label>Counsellor Name</label>
+            <select id="counsellor">
+              <option>SAKIB</option><option>MEET</option><option>RAVINDAR</option><option>AKASH</option>
+            </select>
+          </div>
+          <div><label>Country Enrolled</label>
+            <select id="country" onchange="updateProducts()">
+              <option value="Canada">Canada</option><option value="UK">UK</option>
+              <option value="USA">USA</option><option value="Germany">Germany</option><option value="Australia">Australia</option>
+            </select>
+          </div>
+          <div><label>Agreement Signed</label><select id="agreement"><option>Yes</option><option>No</option></select></div>
+          <div><label>Previous Rejection</label><select id="rejection"><option>Yes</option><option>No</option></select></div>
+          <div><label>No. Of Rejections</label><input type="number" id="rejectionCount" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Enrollment Details</h3>
+        <div class="form-grid">
+          <div class="full-width"><label>Product Enrolled</label><select id="product"></select></div>
+          <div><label>Package (₹)</label><input type="number" id="package" value="1000" /></div>
+          <div><label>Amount Paid Today (₹)</label><input type="number" id="paid" oninput="toggleInstallmentFields(); calculateFinalAmount();" required /></div>
+          <div><label>Discount</label><input type="number" id="discount" oninput="calculateFinalAmount()" /></div>
+          <div><label>Final Amount (With GST & Discount)</label><input type="number" id="final" readonly /></div>
+        </div>
+        <div class="form-grid conditional-fields" id="installmentFields">
+          <div><label>Installment No.</label><select id="installment"><option>Full Payment</option><option>1st Installment</option><option>2nd Installment</option><option>Final Installment</option></select></div>
+          <div><label>Next Installment Date</label><input type="date" id="nextInstallment" /></div>
+          <div><label>Remaining Payment (₹)</label><input type="number" id="remaining" /></div>
+        </div>
+        <div class="form-grid">
+          <div><label>Mode of Payment</label>
+            <select id="paymentMode">
+              <option>UPI</option><option>Bank Transfer</option><option>Cash</option><option>Cheque</option><option>Card</option>
+            </select>
+          </div>
+          <div><label>Bank Name (If applicable)</label><input type="text" id="bank" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Team Details & Notes</h3>
+        <div class="form-grid">
+          <div><label>Tele-Counsellor Name</label><input type="text" id="tele" /></div>
+          <div><label>Faculty Name</label><input type="text" id="faculty" /></div>
+          <div class="full-width"><label>Remarks / Notes</label><textarea id="remarks" rows="4"></textarea></div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+  </div>
+  <script>
+    const productOptions = { /* country-product mapping unchanged */ };
+
+    function updateProducts() {
+      const country = document.getElementById("country").value;
+      const productSelect = document.getElementById("product");
+      productSelect.innerHTML = '';
+      if (productOptions[country]) {
+        productOptions[country].forEach(opt => {
+          const option = document.createElement("option");
+          option.textContent = opt;
+          productSelect.appendChild(option);
+        });
+      }
+    }
+
+    function calculateFinalAmount() {
+      const paid = parseFloat(document.getElementById("paid").value) || 0;
+      const discount = parseFloat(document.getElementById("discount").value) || 0;
+      const gst = paid * 0.18;
+      const final = paid + gst - discount;
+      document.getElementById("final").value = final.toFixed(2);
+    }
+
+    function toggleInstallmentFields() {
+      const paid = parseFloat(document.getElementById("paid").value) || 0;
+      const pkg = parseFloat(document.getElementById("package").value) || 0;
+      const section = document.getElementById("installmentFields");
+      section.classList.toggle("hidden", paid === pkg);
+    }
+
+    document.getElementById("paymentForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const formData = {
+        date: document.getElementById("date").value,
+        name: document.getElementById("name").value,
+        contact: document.getElementById("contact").value,
+        email: document.getElementById("email").value,
+        city: document.getElementById("city").value,
+        lead: document.getElementById("lead").value,
+        counsellor: document.getElementById("counsellor").value,
+        country: document.getElementById("country").value,
+        agreement: document.getElementById("agreement").value,
+        rejection: document.getElementById("rejection").value,
+        rejectionCount: document.getElementById("rejectionCount").value,
+        product: document.getElementById("product").value,
+        package: document.getElementById("package").value,
+        paid: document.getElementById("paid").value,
+        discount: document.getElementById("discount").value,
+        final: document.getElementById("final").value,
+        installment: document.getElementById("installment")?.value || '',
+        nextInstallment: document.getElementById("nextInstallment")?.value || '',
+        remaining: document.getElementById("remaining")?.value || '',
+        paymentMode: document.getElementById("paymentMode").value,
+        bank: document.getElementById("bank").value,
+        tele: document.getElementById("tele").value,
+        faculty: document.getElementById("faculty").value,
+        remarks: document.getElementById("remarks").value
+      };
+
+      fetch('http://localhost:5000/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert(response.message || "Form submitted successfully!");
+        window.location.href = "dashboard.html";
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to submit form");
+      });
+    });
+
+    window.onload = () => {
+      updateProducts();
+      toggleInstallmentFields();
+    };
+  </script>
+</body>
+</html>
