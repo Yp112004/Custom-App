@@ -1,0 +1,184 @@
+// frontend/dashboard.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Payment Dashboard</title>
+  <style>
+    /* [STYLES OMITTED FOR BREVITY - use same styles as before] */
+      body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff6b00;
+      margin-bottom: 30px;
+    }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .search-bar input {
+      padding: 12px 18px;
+      font-size: 1rem;
+      width: 300px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: 0.3s;
+    }
+
+    .search-bar input:focus {
+      border-color: #ff6b00;
+      outline: none;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+      min-width: 1200px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    th {
+      background-color: #ff6b00;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .empty-row {
+      text-align: center;
+      color: #888;
+      padding: 20px;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Student Payment Dashboard</h1>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search by Student Name or Email" onkeyup="filterTable()" />
+      <select id="counsellorFilter" onchange="filterTable()">
+        <option value="">All Counsellors</option>
+      </select>
+    </div>
+    <div class="table-wrapper">
+      <table id="dashboardTable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Student Name</th><th>Contact Number</th><th>Email ID</th><th>City / State</th><th>Lead Source</th>
+            <th>Counsellor Name</th><th>Country Enrolled</th><th>Agreement Signed</th><th>Previous Rejection</th><th>No. Of Rejections</th>
+            <th>Product Enrolled</th><th>Package (₹)</th><th>Amount Paid Today (₹)</th><th>Discount</th><th>Final Amount</th>
+            <th>Installment No.</th><th>Next Installment Date</th><th>Remaining Payment (₹)</th><th>Mode of Payment</th>
+            <th>Bank Name</th><th>Tele-Counsellor Name</th><th>Faculty Name</th><th>Remarks / Notes</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    let data = [];
+    const tbody = document.querySelector("#dashboardTable tbody");
+    const counsellorFilter = document.getElementById("counsellorFilter");
+
+    fetch('http://localhost:5000/all')
+      .then(res => res.json())
+      .then(json => {
+        data = json;
+        renderTable(data);
+        populateCounsellors(data);
+      })
+      .catch(err => {
+        console.error("Failed to fetch data:", err);
+        tbody.innerHTML = `<tr><td colspan="24" class="empty-row">Failed to load data</td></tr>`;
+      });
+
+    function populateCounsellors(data) {
+      const counsellorSet = new Set();
+      data.forEach(entry => {
+        if (entry.counsellor) {
+          counsellorSet.add(entry.counsellor);
+        }
+      });
+      [...counsellorSet].sort().forEach(counsellor => {
+        const opt = document.createElement("option");
+        opt.value = counsellor;
+        opt.textContent = counsellor;
+        counsellorFilter.appendChild(opt);
+      });
+    }
+
+    function renderTable(filteredData) {
+      tbody.innerHTML = "";
+      if (filteredData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="24" class="empty-row">No entries found</td></tr>`;
+        return;
+      }
+      filteredData.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${entry.date}</td><td>${entry.name}</td><td>${entry.contact}</td><td>${entry.email}</td>
+          <td>${entry.city}</td><td>${entry.lead}</td><td>${entry.counsellor}</td><td>${entry.country}</td>
+          <td>${entry.agreement}</td><td>${entry.rejection}</td><td>${entry.rejectionCount}</td><td>${entry.product}</td>
+          <td>₹${entry.package}</td><td>₹${entry.paid}</td><td>₹${entry.discount}</td><td>₹${entry.final}</td>
+          <td>${entry.installment}</td><td>${entry.nextInstallment}</td><td>₹${entry.remaining}</td>
+          <td>${entry.paymentMode}</td><td>${entry.bank}</td><td>${entry.tele}</td><td>${entry.faculty}</td><td>${entry.remarks}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function filterTable() {
+      const searchInput = document.getElementById("searchInput").value.toLowerCase();
+      const selectedCounsellor = counsellorFilter.value;
+      const filtered = data.filter(entry => {
+        const matchesNameOrEmail = entry.name.toLowerCase().includes(searchInput) || entry.email.toLowerCase().includes(searchInput);
+        const matchesCounsellor = selectedCounsellor === "" || entry.counsellor === selectedCounsellor;
+        return matchesNameOrEmail && matchesCounsellor;
+      });
+      renderTable(filtered);
+    }
+  </script>
+</body>
+</html>
